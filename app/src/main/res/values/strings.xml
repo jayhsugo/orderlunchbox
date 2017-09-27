@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">訂便當系統</string>
+
+    <string name="tab_member">會員</string>
+    <string name="tab_menu">點餐</string>
+    <string name="tab_checkout">結帳</string>
+    <string name="tab_history">紀錄</string>
+
+    <string name="tab_admin_member">負責人</string>
+    <string name="tab_arrange_store">菜單安排</string>
+    <string name="tab_total_amount">點餐統計</string>
+    <string name="tab_edit_store">店家編輯</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
+</resources>

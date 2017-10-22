@@ -18,7 +18,7 @@
             app:layout_constraintTop_toTopOf="parent"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginBottom="80dp"
+            android:layout_marginBottom="8dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginTop="8dp"
@@ -32,22 +32,60 @@
 
                 <TextView
                     android:id="@+id/textView"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
                     android:gravity="center"
-                    android:text="今日訂購清單如下"
+                    android:text="@string/text_order_list"
                     android:textSize="20dp" />
 
                 <TextView
-                    android:id="@+id/tvStorename2"
-                    android:layout_width="match_parent"
+                    android:id="@+id/tvStorename"
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="店家名稱"
-                    android:textColor="#ff7b00"
+                    android:text=""
+                    android:textColor="@color/colorPrimary"
                     android:textSize="30dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimary">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/text_OrderItem"
+                    android:textColor="@color/columnTitleText"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8dp"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/text_ItemPrice"
+                    android:textColor="@color/columnTitleText"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="42dp"
+                    android:layout_marginRight="42dp"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/text_ItemNumber"
+                    android:textColor="@color/columnTitleText"
+                    android:textSize="14sp" />
+
 
             </LinearLayout>
 
@@ -58,15 +96,19 @@
                 android:orientation="horizontal">
 
                 <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recyclerView_orderitem"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:id="@+id/recyclerView_orderitem" />
+                    android:layout_height="match_parent">
+
+                </android.support.v7.widget.RecyclerView>
+
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
+                android:layout_marginTop="8dp"
                 android:orientation="horizontal">
 
                 <TextView
@@ -75,14 +117,17 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="總金額" />
+                    android:text="@string/tvTotalAmount"
+                    android:textColor="@color/red"
+                    android:textSize="30sp"/>
 
                 <Button
                     android:id="@+id/btnPaymentCheck"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="繳費確認" />
+                    android:text="@string/btnSend"
+                    android:textSize="20sp"/>
             </LinearLayout>
 
         </LinearLayout>

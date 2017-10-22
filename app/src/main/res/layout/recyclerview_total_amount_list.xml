@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="2dp"
+    android:background="@color/listBackground"
+    android:id="@+id/layoutTotalAmountList">
+
+    <TextView
+        android:id="@+id/tvOrderItem"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="10"
+        android:maxLines="2"
+        android:text=""
+        android:textColor="@color/colorPrimary"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvItemPrice"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_weight="2"
+        android:text=""
+        android:textColor="@color/red"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/tvItemNumber"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_weight="2"
+        android:text=""
+        android:textSize="16sp"
+        android:textColor="@color/blue"/>
+
+    <TextView
+        android:id="@+id/tvMemberName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_vertical"
+        android:layout_weight="5"
+        android:text=""
+        android:textColor="#000000"
+        android:textSize="14sp" />
+
+
+</LinearLayout>

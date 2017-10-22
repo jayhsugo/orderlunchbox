@@ -64,9 +64,7 @@ public class Store implements Serializable {
         return storeRequirement;
     }
 
-    public void setStoreRequirement(String storeRequirement) {
-        this.storeRequirement = storeRequirement;
-    }
+    public void setStoreRequirement(String storeRequirement) { this.storeRequirement = storeRequirement; }
 
     public String getGroupCode() {
         return groupCode;

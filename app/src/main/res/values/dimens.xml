@@ -1,3 +1,11 @@
 <resources>
-    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="textTitle">16dp</dimen>
+    <dimen name="textContent">16dp</dimen>
+    <dimen name="listTitle">16dp</dimen>
+    <dimen name="listContent">16dp</dimen>
+    <dimen name="listPirce">16dp</dimen>
+    <dimen name="listNumber">16dp</dimen>
+    <dimen name="listName">16dp</dimen>
+    <dimen name="totalAmount">16dp</dimen>
+    <dimen name="totalNumber">16dp</dimen>
 </resources>

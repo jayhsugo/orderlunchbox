@@ -1,13 +1,90 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.jayhsugo.orderlunchbox.HistoryFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="History" />
+        android:layout_margin="8dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/layoutHistoryList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary">
+
+            <TextView
+                android:id="@+id/tvOrderDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/text_order_date"
+                android:textColor="@color/columnTitleText"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvStoreName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_weight="2"
+                android:text="@string/text_store"
+                android:textColor="@color/columnTitleText"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvOrderItem"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_weight="3"
+                android:text="@string/text_OrderItem"
+                android:textColor="@color/columnTitleText"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvOrderItemPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/text_ItemPrice"
+                android:textColor="@color/columnTitleText"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvItemNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="2dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/text_ItemNumber"
+                android:textColor="@color/columnTitleText"
+                android:textSize="16sp" />
+
+
+        </LinearLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerView_historylist"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+        </android.support.v7.widget.RecyclerView>
+
+    </LinearLayout>
 
 </FrameLayout>

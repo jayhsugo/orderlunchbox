@@ -1,21 +1,113 @@
 <resources>
+    <!--common-->
+    <string name="text_OrderItem">項目</string>
+    <string name="text_ItemPrice">單價</string>
+    <string name="text_ItemNumber">數量</string>
+    <string name="btnSend">確認送出</string>
+
+    <!--activity_wellcome-->
     <string name="app_name">訂便當系統</string>
+    <string name="wellcome_slogan">訂\n便\n當\n嘍</string>
 
-    <string name="tab_member">會員</string>
-    <string name="tab_menu">點餐</string>
-    <string name="tab_checkout">結帳</string>
-    <string name="tab_history">紀錄</string>
+    <!--activity_login-->
+    <string name="please_chose_identify">請選擇身份別</string>
+    <string name="administrator">訂購負責人</string>
+    <string name="common_user">一般訂購人</string>
+    <string name="quick_login">本機快速登入</string>
 
-    <string name="tab_admin_member">負責人</string>
-    <string name="tab_arrange_store">菜單安排</string>
-    <string name="tab_total_amount">點餐統計</string>
-    <string name="tab_edit_store">店家編輯</string>
+    <!--activity_main-->
+    <string name="text_member">會員</string>
+    <string name="text_menu">點餐</string>
+    <string name="text_checkout">結帳</string>
+    <string name="text_history">紀錄</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!--activity_admin_main-->
+    <string name="text_admin_member">負責人</string>
+    <string name="text_arrange_store">菜單安排</string>
+    <string name="text_total_amount">點餐統計</string>
+    <string name="text_edit_store">店家編輯</string>
 
-    <string name="title_activity_fullscreen">FullscreenActivity</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <!--actionbar_layout-->
+    <string name="tvActionbarTitle">管理員介面</string>
+
+    <!--activity_create_admin_member-->
+    <!--activity_create_member-->
+    <string name="tvUserName">請輸入暱稱</string>
+    <string name="tvGroupName">請建立群組名稱</string>
+    <string name="tvGroupCode">請建立群組代碼 (限數字、大小寫英文字母)</string>
+    <string name="tvGroupPassword">請建立群組密碼 (限數字、大小寫英文字母)</string>
+
+    <!--activity_create_member-->
+    <string name="tvGroupCode_member">請輸入群組代碼 (限數字、大小寫英文字母)</string>
+    <string name="tvGroupPassword_member">請輸入群組密碼 (限數字、大小寫英文字母)</string>
+
+    <!--fragment_total_amount-->
+    <!--fragment_total_amount_list-->
+    <string name="text_StoreName">店家名稱:</string>
+    <string name="text_StorePhone">店家電話:</string>
+    <string name="text_StoreRequirement">店家備註:</string>
+    <string name="text_Total">總\n計</string>
+    <string name="tvTotalAmount">總金額</string>
+    <string name="tvTotalNumber">總個數</string>
+    <string name="btnRefresh">刷新訂單</string>
+    <string name="text_MemberName">訂購人</string>
+    <string name="tvStatusDescription">訂購狀態說明如下\n訂購數量x1:Name(1)\n未繳費:(X)Name(1)\n已繳費:Name(1)</string>
+
+    <!--fragment_arrange_store-->
+    <string name="tvArrangeInterval">安排區間：</string>
+    <string name="cbWeekdays">平日</string>
+    <string name="cbSaturday">星期六</string>
+    <string name="cbSunday">星期日</string>
+    <string name="btnArrangeStoreByRandom">隨機安排店家</string>
+
+    <!--fragment_arrange_ready_store-->
+    <string name="btnReArrangeStore">重新安排店家</string>
+
+    <!--fragment_member_data-->
+    <string name="hello">Hello！</string>
+    <string name="member_groupname_is">您的群組名稱為</string>
+    <string name="member_groupcode_is">群組代碼為</string>
+    <string name="btnCopyGroupCode">&#12288;複製代碼&#12288;</string>
+    <string name="btnDeleteMemberData">刪除會員資料</string>
+    <string name="btnEditMemberData">修改會員資料</string>
+
+    <!--fragment_checkout-->
+    <string name="text_order_list">訂購清單如下</string>
+
+    <!--fragment_edit_store_name_list-->
+    <string name="edit_store_name_note">請點選店家或新增店家進入編輯介面</string>
+    <string name="btnAddNewStore">新增店家</string>
+
+    <!--fragment_edit_store_menu-->
+    <string name="store_name">店名</string>
+    <string name="store_phone">電話</string>
+    <string name="store_note">備註</string>
+    <string name="hint_store_name">XX便當</string>
+    <string name="hint_store_phone">03-4300001,03-4300002</string>
+    <string name="hint_store_note">例如:滿多少金額or數量才外送</string>
+    <string name="btnAddNewItem">新增菜單</string>
+
+    <!--fragment_history-->
+    <string name="text_order_date">日期</string>
+    <string name="text_store">店家</string>
+
+    <!--fragment_menu-->
+    <string name="today_order_store_is">今日店家為</string>
+    <string name="tvOrderItemNumber">共 0 項</string>
+    <string name="btnOrderCheck">確認清單</string>
+
+    <!--fragment_order_list-->
+    <string name="today_order_item_list_is">今日訂購清單如下</string>
+
+    <!--recyclerview_orderitem-->
+    <string name="btnNumberDown">－</string>
+    <string name="btnNumberUp">＋</string>
+
+    <!--activity_admin_main.ListView-->
+    <string-array name="mode">
+        <item>訂購負責人介面</item>
+        <item>一般訂購人介面</item>
+    </string-array>
+    >
 
 </resources>

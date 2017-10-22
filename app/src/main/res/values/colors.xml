@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#ad7000</color>
+    <color name="colorPrimaryDark">#6f2108</color>
+    <color name="colorAccent">#fdb833</color>
+
+    <color name="columnTitleText">#f7edf0</color>
+    <color name="listBackground">#fff0d0</color>
+
+    <color name="tablayoutClick">#ffff56</color>
 
     <color name="black_overlay">#66000000</color>
 
     <color name="red">#FF0000</color>
-    <color name="green">#00FF00</color>
+    <color name="green">#00ff00</color>
     <color name="blue">#0000FF</color>
 
     <color name="recyclerviewItem_onClick">#cbf491</color>
     <color name="recyclerviewItem_offClick">#fffae6</color>
+    <color name="background_material_light">#f7edf0</color>
 </resources>

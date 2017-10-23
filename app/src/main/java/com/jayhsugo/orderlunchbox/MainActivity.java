@@ -207,5 +207,25 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    public void tabSelect(int i) {
+        switch (i) {
+            case 0:
+                tab0.select();
+                break;
+            case 1:
+                tab1.select();
+                break;
+            case 2:
+                tab2.select();
+                break;
+            case 3:
+                tab3.select();
+                break;
+            default:
+
+                break;
+        }
+    }
+
 }
 

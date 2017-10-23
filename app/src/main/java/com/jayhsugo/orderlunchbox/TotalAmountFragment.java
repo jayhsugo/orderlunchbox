@@ -152,10 +152,10 @@ public class TotalAmountFragment extends Fragment {
                        public void onResponse(String s) {
                             Log.d("MyLog", "getTotalMemberOrderList_onResponse:" + s);
                             if (s.equals("-1")) {
-                                memberData.edit().putBoolean("TOTAL_MEMBER_ORDER_LIST_IS_EXIST", false).apply();
+//                                memberData.edit().putBoolean("TOTAL_MEMBER_ORDER_LIST_IS_EXIST", false).apply();
                                 showTodayTotalAmountList();
                             } else {
-                                memberData.edit().putBoolean("TOTAL_MEMBER_ORDER_LIST_IS_EXIST", true).apply();
+//                                memberData.edit().putBoolean("TOTAL_MEMBER_ORDER_LIST_IS_EXIST", true).apply();
                                 saveTotalMemberOrderList(s);
                             }
                         }

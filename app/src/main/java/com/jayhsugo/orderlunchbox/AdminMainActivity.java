@@ -15,54 +15,39 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 public class AdminMainActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mActBarDrawerToggle;
     private TabLayout.Tab tab0, tab1, tab2, tab3;
-    private ImageView ivActionbarLogo;
-    private TextView tvActionbarTitle;
+//    private ImageView ivActionbarLogo;
+//    private TextView tvActionbarTitle;
+    private ActionBar actBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_main);
+        Log.d("MyLog", "AdminMainActivity_onCreate()");
 
-        ivActionbarLogo = (ImageView) findViewById(R.id.ivActionbarLogo);
-        tvActionbarTitle = (TextView) findViewById(R.id.tvActionbarTitle);
+//        ivActionbarLogo = (ImageView) findViewById(R.id.ivActionbarLogo);
+//        tvActionbarTitle = (TextView) findViewById(R.id.tvActionbarTitle);
 
-        // 設定側開式選單
-        ActionBar actBar = getSupportActionBar();
-
-        // 返回箭頭（默認不顯示）
-        actBar.setDisplayHomeAsUpEnabled(true);
-        // 左側圖標點擊事件使能
-        actBar.setHomeButtonEnabled(true);
-        // 使左上角圖標(系統)是否顯示
-        actBar.setDisplayShowHomeEnabled(true);
-        // 顯示標題
-        actBar.setDisplayShowTitleEnabled(true);
-        // 顯示自定義示圖
-        View actionbarLayout = LayoutInflater.from(this).inflate(R.layout.actionbar_layout, null);
-        actBar.setDisplayShowCustomEnabled(true);
-        actBar.setCustomView(actionbarLayout);
-
+        actionbarSetting();
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         mActBarDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.app_name, R.string.app_name);
         mActBarDrawerToggle.setDrawerIndicatorEnabled(true);
         mDrawerLayout.addDrawerListener(mActBarDrawerToggle);
-
 
         ListView listView = (ListView) findViewById(R.id.listView);
         ArrayAdapter<CharSequence> arrAdapWeekday =
@@ -85,6 +70,7 @@ public class AdminMainActivity extends AppCompatActivity {
         initBody(tabLayout.getSelectedTabPosition());
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 initBody(tab.getPosition());
@@ -98,9 +84,36 @@ public class AdminMainActivity extends AppCompatActivity {
             public void onTabReselected(TabLayout.Tab tab) {
             }
         });
+        Log.d("MyLog", "AdminMainActivity_tabLayout.addOnTabSelectedListener()");
+
+        int id = getIntent().getIntExtra("id", 0);
+        if (id == 1) {
+            Log.d("MyLog", "AdminMainActivity_getSupportFragmentManager(id == 1)");
+            initBody(2);
+        }
+    }
+
+    public void actionbarSetting() {
+
+        actBar = getSupportActionBar();
+        // 返回箭頭（默認不顯示）
+        actBar.setDisplayHomeAsUpEnabled(true);
+        // 左側圖標點擊事件使能
+        actBar.setHomeButtonEnabled(true);
+        // 使左上角圖標(系統)是否顯示
+        actBar.setDisplayShowHomeEnabled(true);
+        // 顯示標題
+        actBar.setDisplayShowTitleEnabled(true);
+
+        // 顯示自定義示圖
+        View actionbarLayout = LayoutInflater.from(this).inflate(R.layout.actionbar_layout, null);
+        actBar.setDisplayShowCustomEnabled(true);
+        actBar.setCustomView(actionbarLayout);
+
     }
 
     public void initBody(int position) {
+        Log.d("MyLog", "AdminMainActivity_initBody");
         Fragment fragment;
         switch (position) {
 
@@ -135,11 +148,20 @@ public class AdminMainActivity extends AppCompatActivity {
     }
 
     public void switchFragment(Fragment fragment) {
-
+        Log.d("MyLog", "AdminMainActivity_switchFragment");
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.content_frame, fragment);
         fragmentTransaction.commit();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // 判斷requestCode, resultCode 來確定要執行的代碼
+        if(requestCode == 1 && resultCode == 2){
+            initBody(2);
+        }
     }
 
     @Override
@@ -207,5 +229,25 @@ public class AdminMainActivity extends AppCompatActivity {
             dialog.getButton(dialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
         }
         return true;
+    }
+
+    public void tabSelect(int i) {
+        switch (i) {
+            case 0:
+                tab0.select();
+                break;
+            case 1:
+                tab1.select();
+                break;
+            case 2:
+                tab2.select();
+                break;
+            case 3:
+                tab3.select();
+                break;
+            default:
+
+                break;
+        }
     }
 }

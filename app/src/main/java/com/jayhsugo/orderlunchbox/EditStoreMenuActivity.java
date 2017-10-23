@@ -1,18 +1,20 @@
 package com.jayhsugo.orderlunchbox;
 
-
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -35,13 +37,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.content.Context.MODE_PRIVATE;
-
-
-/**
- * A simple {@link Fragment} subclass.
- */
-public class EditStoreMenuFragment extends Fragment {
+public class EditStoreMenuActivity extends AppCompatActivity {
 
     private RequestQueue mQueue;
     private StringRequest getRequest;
@@ -53,15 +49,12 @@ public class EditStoreMenuFragment extends Fragment {
     private SharedPreferences memberData;
     private String groupCode, storeName, storeMenuJsonData;
     private EditText etStoreName, etStorePhone, etStoreRequirement;
-
-    public EditStoreMenuFragment() {
-        // Required empty public constructor
-    }
+    private ActionBar actBar;
 
     private void loadingDialog(boolean isShow) {
         if (isShow) {
-            View view = View.inflate(getActivity(), R.layout.loading_dialog, null);
-            dialog = new AlertDialog.Builder(getActivity())
+            View view = View.inflate(EditStoreMenuActivity.this, R.layout.loading_dialog, null);
+            dialog = new AlertDialog.Builder(EditStoreMenuActivity.this)
                     .setTitle("資料載入中...")
                     .setView(view)
                     .setCancelable(false)
@@ -72,15 +65,46 @@ public class EditStoreMenuFragment extends Fragment {
         }
     }
 
+    public void actionbarSetting() {
+
+        actBar = getSupportActionBar();
+        // 返回箭頭（默認不顯示）
+        actBar.setDisplayHomeAsUpEnabled(true);
+        // 左側圖標點擊事件使能
+        actBar.setHomeButtonEnabled(true);
+        // 使左上角圖標(系統)是否顯示
+        actBar.setDisplayShowHomeEnabled(false);
+        // 顯示標題
+        actBar.setDisplayShowTitleEnabled(true);
+        actBar.setTitle(R.string.text_edit_store);
+
+        // 顯示自定義示圖
+        View actionbarLayout = LayoutInflater.from(this).inflate(R.layout.actionbar_layout, null);
+        actBar.setDisplayShowCustomEnabled(true);
+        actBar.setCustomView(actionbarLayout);
+
+    }
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home: // 點擊返回事件處理
+                EditStoreMenuActivity.this.setResult(2);
+                EditStoreMenuActivity.this.finish();
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_edit_store_menu);
 
         loadingDialog(true);
+        actionbarSetting();
 
-        View view = inflater.inflate(R.layout.fragment_edit_store_menu, container, false);
-
-        memberData = getActivity().getSharedPreferences("member_data", MODE_PRIVATE);
+        memberData = getSharedPreferences("member_data", MODE_PRIVATE);
         groupCode = memberData.getString("MEMBER_GROUPCODE", "0"); // 如果沒會員檔案則取的字串0
         storeName = memberData.getString("EDIT_STORENAME", "0"); // 如果沒會員檔案則取的字串0
         Log.d("MyLog", "storeName" + storeName);
@@ -89,7 +113,49 @@ public class EditStoreMenuFragment extends Fragment {
 
             getStoreDataFromServer();
         }
-        return view;
+
+        storeAdapter = new StoreAdapter(EditStoreMenuActivity.this.getLayoutInflater());
+
+        etStoreName = (EditText) findViewById(R.id.etStoreName);
+        etStorePhone = (EditText) findViewById(R.id.etStorePhone);
+        etStoreRequirement = (EditText) findViewById(R.id.etStoreRequirement);
+
+        btnAddNewItem = (Button) findViewById(R.id.btnAddNewItem);
+        btnAddNewItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addMenuDialog(menuList.size() - 1);
+            }
+        });
+
+        btnSendStoreMenu = (Button) findViewById(R.id.btnSendStoreMenu);
+        btnSendStoreMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (etStoreName.getText().toString().isEmpty()) {
+                    String text = "請輸入店家名稱!";
+                    Toast.makeText(EditStoreMenuActivity.this, text, Toast.LENGTH_SHORT).show();
+                } else if (etStoreName.getText().toString().indexOf(",") != -1) {
+                    String text = "店名不可含有逗號\",\"";
+                    Toast.makeText(EditStoreMenuActivity.this, text, Toast.LENGTH_SHORT).show();
+                } else if (etStorePhone.getText().toString().isEmpty()) {
+                    String text = "請輸入店家電話!";
+                    Toast.makeText(EditStoreMenuActivity.this, text, Toast.LENGTH_SHORT).show();
+                } else if (!(menuList.size() > 0)) {
+                    String text = "請新增菜單!";
+                    Toast.makeText(EditStoreMenuActivity.this, text, Toast.LENGTH_SHORT).show();
+                } else {
+                    loadingDialog(true);
+                    saveStoreDataToJson();
+                }
+            }
+        });
+
+        if (storeName.equals("0")) {
+            menuList = new ArrayList<>();
+            createRecyclerView();
+        }
     }
 
     private void getStoreDataFromServer() {
@@ -105,7 +171,7 @@ public class EditStoreMenuFragment extends Fragment {
             e.printStackTrace();
         }
 
-        mQueue = new Volley().newRequestQueue(getActivity());
+        mQueue = new Volley().newRequestQueue(EditStoreMenuActivity.this);
         getRequest = new StringRequest(parameterUrl,
                 new Response.Listener<String>() {
                     @Override
@@ -117,7 +183,7 @@ public class EditStoreMenuFragment extends Fragment {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
                         loadingDialog(false);
-                        Toast.makeText(getActivity(), "伺服器忙碌中，請稍後再試，謝謝!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(EditStoreMenuActivity.this, "伺服器忙碌中，請稍後再試，謝謝!", Toast.LENGTH_SHORT).show();
                     }
                 });
         mQueue.add(getRequest);
@@ -160,7 +226,7 @@ public class EditStoreMenuFragment extends Fragment {
             e.printStackTrace();
         }
 
-        mQueue = new Volley().newRequestQueue(getActivity());
+        mQueue = new Volley().newRequestQueue(EditStoreMenuActivity.this);
         getRequest = new StringRequest(parameterUrl,
                 new Response.Listener<String>() {
                     @Override
@@ -172,7 +238,7 @@ public class EditStoreMenuFragment extends Fragment {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
                         loadingDialog(false);
-                        Toast.makeText(getActivity(), "伺服器忙碌中，請稍後再試，謝謝!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(EditStoreMenuActivity.this, "伺服器忙碌中，請稍後再試，謝謝!", Toast.LENGTH_SHORT).show();
                     }
                 });
         mQueue.add(getRequest);
@@ -184,76 +250,26 @@ public class EditStoreMenuFragment extends Fragment {
         JSONObject j;
         String menuitem;
         String itemprice;
-         try {
-             j = new JSONObject(jasonDataString);
-             int jDataLength = j.getJSONArray("data").length();
-             for (int i = 0; i < jDataLength; i++) {
-                 menuitem = j.getJSONArray("data").getJSONObject(i).getString("menuitem");
-                 itemprice = j.getJSONArray("data").getJSONObject(i).getString("itemprice");
-                 menuList.add(new Menu(menuitem, itemprice));
-             }
-          } catch (JSONException e) {
-             e.printStackTrace();
-         }
-         createRecyclerView();
+        try {
+            j = new JSONObject(jasonDataString);
+            int jDataLength = j.getJSONArray("data").length();
+            for (int i = 0; i < jDataLength; i++) {
+                menuitem = j.getJSONArray("data").getJSONObject(i).getString("menuitem");
+                itemprice = j.getJSONArray("data").getJSONObject(i).getString("itemprice");
+                menuList.add(new Menu(menuitem, itemprice));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        createRecyclerView();
     }
 
     private void createRecyclerView() {
-        recyclerView = getView().findViewById(R.id.recyclerView_storemenu);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView_storemenu);
+        recyclerView.setLayoutManager(new LinearLayoutManager(EditStoreMenuActivity.this));
         recyclerView.setAdapter(storeAdapter);
-        recyclerView.setItemAnimator( new DefaultItemAnimator());
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
         loadingDialog(false);
-    }
-
-
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        storeAdapter = new StoreAdapter(getActivity().getLayoutInflater());
-
-        etStoreName = getView().findViewById(R.id.etStoreName);
-        etStorePhone = getView().findViewById(R.id.etStorePhone);
-        etStoreRequirement = getView().findViewById(R.id.etStoreRequirement);
-
-        btnAddNewItem = getView().findViewById(R.id.btnAddNewItem);
-        btnAddNewItem.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                addMenuDialog(menuList.size()-1);
-            }
-        });
-
-        btnSendStoreMenu = getView().findViewById(R.id.btnSendStoreMenu);
-        btnSendStoreMenu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                if (etStoreName.getText().toString().isEmpty()) {
-                    String text = "請輸入店家名稱!";
-                    Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
-                } else if (etStoreName.getText().toString().indexOf(",") != -1) {
-                    String text = "店名不可含有逗號\",\"";
-                    Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
-                } else if (etStorePhone.getText().toString().isEmpty()) {
-                    String text = "請輸入店家電話!";
-                    Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
-                } else if (!(menuList.size() > 0)) {
-                    String text = "請新增菜單!";
-                    Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
-                } else {
-                    loadingDialog(true);
-                    saveStoreDataToJson();
-                }
-            }
-        });
-
-        if (storeName.equals("0")) {
-            menuList = new ArrayList<>();
-            createRecyclerView();
-        }
     }
 
     private void saveStoreDataToJson() {
@@ -280,11 +296,12 @@ public class EditStoreMenuFragment extends Fragment {
     }
 
     private void goToNextPage() {
-        getActivity().getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.content_frame, new EditStoreNameListFragment(), null)
-                .addToBackStack(null)
-                .commit();
+//        AdminMainActivity adminMainActivity = new AdminMainActivity();
+//        adminMainActivity.initBody(2);
+
+        Intent intent = new Intent(this, AdminMainActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     private void uploadStoreMenuData() {
@@ -305,30 +322,68 @@ public class EditStoreMenuFragment extends Fragment {
             e.printStackTrace();
         }
 
-        mQueue = new Volley().newRequestQueue(getActivity());
+        mQueue = new Volley().newRequestQueue(EditStoreMenuActivity.this);
         getRequest = new StringRequest(parameterUrl,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String s) {
                         loadingDialog(false);
                         if (s.equals("1")) {
-                            Toast.makeText(getActivity(), "資料更新成功", Toast.LENGTH_SHORT).show();
-                            goToNextPage();
+                            Toast.makeText(EditStoreMenuActivity.this, "資料更新成功", Toast.LENGTH_SHORT).show();
+                            choseNextStep();
                         } else if (s.equals("2")) {
-                            Toast.makeText(getActivity(), "資料新增成功", Toast.LENGTH_SHORT).show();
-                            goToNextPage();
+                            Toast.makeText(EditStoreMenuActivity.this, "資料新增成功", Toast.LENGTH_SHORT).show();
+                            choseNextStep();
                         } else {
-                            Toast.makeText(getActivity(), "伺服器忙碌中，請稍後再試，謝謝!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(EditStoreMenuActivity.this, "伺服器忙碌中，請稍後再試，謝謝!", Toast.LENGTH_SHORT).show();
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        Toast.makeText(getActivity(), "伺服器忙碌中，請稍後再試，謝謝!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(EditStoreMenuActivity.this, "伺服器忙碌中，請稍後再試，謝謝!", Toast.LENGTH_SHORT).show();
                     }
                 });
         mQueue.add(getRequest);
+    }
+
+    private void choseNextStep() {
+        dialog = new AlertDialog.Builder(EditStoreMenuActivity.this)
+                .setTitle("是否新增下一筆店家")
+                .setPositiveButton("新增", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        cleanEditFrom();
+                    }
+                })
+                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                })
+                .setNeutralButton("結束編輯", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        EditStoreMenuActivity.this.setResult(2);
+                        EditStoreMenuActivity.this.finish();
+                    }
+                })
+                .setCancelable(true)
+                .create();
+        dialog.show();
+        dialog.getButton(dialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(EditStoreMenuActivity.this, R.color.colorPrimary));
+        dialog.getButton(dialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(EditStoreMenuActivity.this, R.color.colorPrimary));
+        dialog.getButton(dialog.BUTTON_NEUTRAL).setTextColor(ContextCompat.getColor(EditStoreMenuActivity.this, R.color.colorPrimary));
+    }
+
+    private void cleanEditFrom() {
+        etStoreName.setText("");
+        etStorePhone.setText("");
+        etStoreRequirement.setText("");
+        menuList.clear();
+        createRecyclerView();
     }
 
     private class StoreAdapter extends RecyclerView.Adapter<StoreAdapter.ViewHolder> {
@@ -373,8 +428,8 @@ public class EditStoreMenuFragment extends Fragment {
         }
 
         public void addData(int position, String menuItem, String itemPrice) {
-            menuList.add(position+1, new Menu(menuItem, itemPrice));
-            notifyItemInserted(position+1);
+            menuList.add(position + 1, new Menu(menuItem, itemPrice));
+            notifyItemInserted(position + 1);
         }
 
         public void updateItem(int position, String menuItem, String itemPrice) {
@@ -389,7 +444,7 @@ public class EditStoreMenuFragment extends Fragment {
             notifyItemRemoved(position);
         }
 
-        public boolean checkMenuItemIsDouble(String menuItem){
+        public boolean checkMenuItemIsDouble(String menuItem) {
             if (menuList.size() > 0) {
                 for (int i = 0; i < menuList.size(); i++) {
                     if (menuItem.equals(menuList.get(i).getMenuItem().toString())) {
@@ -402,7 +457,7 @@ public class EditStoreMenuFragment extends Fragment {
     }
 
     private void editMenuDialog(final int position, String menuItem, String itemPrice) {
-        View view = View.inflate(getActivity(), R.layout.edit_menu, null);
+        View view = View.inflate(EditStoreMenuActivity.this, R.layout.edit_menu, null);
         final EditText etMenuItem, etItemPrice;
         etMenuItem = view.findViewById(R.id.etMenuItem);
         etItemPrice = view.findViewById(R.id.etItemPrice);
@@ -410,7 +465,7 @@ public class EditStoreMenuFragment extends Fragment {
         etMenuItem.setText(menuItem);
         etItemPrice.setText(itemPrice);
 
-        dialog = new AlertDialog.Builder(getActivity())
+        dialog = new AlertDialog.Builder(EditStoreMenuActivity.this)
                 .setTitle("編輯菜單")
                 .setView(view)
                 .setPositiveButton("確認", new DialogInterface.OnClickListener() {
@@ -418,14 +473,14 @@ public class EditStoreMenuFragment extends Fragment {
                     public void onClick(DialogInterface dialogInterface, int i) {
 
                         if (etMenuItem.getText().toString().isEmpty() || etItemPrice.getText().toString().isEmpty()) {
-                            Toast.makeText(getActivity(), "請輸入項目及單價", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(EditStoreMenuActivity.this, "請輸入項目及單價", Toast.LENGTH_SHORT).show();
                         } else {
                             // 先檢查點選的項目名稱是否有更動
                             if (etMenuItem.getText().toString().equals(menuList.get(position).getMenuItem().toString())) {
                                 // 如果未更動則檢查價錢是否有更動
                                 if (etItemPrice.getText().toString().equals(menuList.get(position).getItemPrice().toString())) {
                                     // 如果價錢未更動則提示項目未更動
-                                    Toast.makeText(getActivity(), "項目未更動", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(EditStoreMenuActivity.this, "項目未更動", Toast.LENGTH_SHORT).show();
                                 } else {
                                     // 如果價錢有更動則執行項目更新
                                     storeAdapter.updateItem(position, etMenuItem.getText().toString(), etItemPrice.getText().toString());
@@ -435,7 +490,7 @@ public class EditStoreMenuFragment extends Fragment {
                                 boolean itemIsDouble = storeAdapter.checkMenuItemIsDouble(etMenuItem.getText().toString());
                                 if (itemIsDouble) {
                                     // 如果有重覆則提示項目已存在
-                                    Toast.makeText(getActivity(), "項目已存在，請點選該項目進行編輯", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(EditStoreMenuActivity.this, "項目已存在，請點選該項目進行編輯", Toast.LENGTH_SHORT).show();
                                 } else {
                                     // 如果未重覆則執行項目更新
                                     storeAdapter.updateItem(position, etMenuItem.getText().toString(), etItemPrice.getText().toString());
@@ -459,31 +514,31 @@ public class EditStoreMenuFragment extends Fragment {
                 .setCancelable(true)
                 .create();
         dialog.show();
-        dialog.getButton(dialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
-        dialog.getButton(dialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
-        dialog.getButton(dialog.BUTTON_NEUTRAL).setTextColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
+        dialog.getButton(dialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(EditStoreMenuActivity.this, R.color.colorPrimary));
+        dialog.getButton(dialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(EditStoreMenuActivity.this, R.color.colorPrimary));
+        dialog.getButton(dialog.BUTTON_NEUTRAL).setTextColor(ContextCompat.getColor(EditStoreMenuActivity.this, R.color.colorPrimary));
     }
 
     private void addMenuDialog(final int position) {
 
-        View view = View.inflate(getActivity(), R.layout.edit_menu, null);
+        View view = View.inflate(EditStoreMenuActivity.this, R.layout.edit_menu, null);
         final EditText etMenuItem, etItemPrice;
         etMenuItem = view.findViewById(R.id.etMenuItem);
         etItemPrice = view.findViewById(R.id.etItemPrice);
 
-        dialog = new AlertDialog.Builder(getActivity())
+        dialog = new AlertDialog.Builder(EditStoreMenuActivity.this)
                 .setTitle("新增菜單")
                 .setView(view)
                 .setPositiveButton("確認", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         if (etMenuItem.getText().toString().isEmpty() || etItemPrice.getText().toString().isEmpty()) {
-                            Toast.makeText(getActivity(), "請輸入項目及單價", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(EditStoreMenuActivity.this, "請輸入項目及單價", Toast.LENGTH_SHORT).show();
                         } else {
                             // 先檢查項目名稱是否已重覆
                             boolean itemIsDouble = storeAdapter.checkMenuItemIsDouble(etMenuItem.getText().toString());
                             if (itemIsDouble) {
-                                Toast.makeText(getActivity(), "項目已存在，請點選該項目進行編輯", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(EditStoreMenuActivity.this, "項目已存在，請點選該項目進行編輯", Toast.LENGTH_SHORT).show();
                             } else {
                                 storeAdapter.addData(position, etMenuItem.getText().toString(), etItemPrice.getText().toString());
                             }
@@ -499,7 +554,21 @@ public class EditStoreMenuFragment extends Fragment {
                 .setCancelable(true)
                 .create();
         dialog.show();
-        dialog.getButton(dialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
-        dialog.getButton(dialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
+        dialog.getButton(dialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(EditStoreMenuActivity.this, R.color.colorPrimary));
+        dialog.getButton(dialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(EditStoreMenuActivity.this, R.color.colorPrimary));
+    }
+
+    /**
+     * 捕捉返回键事件
+     */
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // 當點擊返回鍵以及點擊重覆次數為0
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+
+            // 執行事件
+            EditStoreMenuActivity.this.setResult(2);
+            EditStoreMenuActivity.this.finish();
+        }
+        return false;
     }
 }

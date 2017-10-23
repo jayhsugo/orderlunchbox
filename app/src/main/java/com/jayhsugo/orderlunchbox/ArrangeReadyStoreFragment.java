@@ -1,6 +1,7 @@
 package com.jayhsugo.orderlunchbox;
 
 
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,6 +17,16 @@ import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +41,12 @@ public class ArrangeReadyStoreFragment extends Fragment {
 
     private Button btnReArrangeStore;
     private TableLayout tableLayoutDateStore;
-    private List<String> storeList, dateList, dateWithYearList, storeNameArrangeList;
+    private List<String> storeList, storeNotExistList;
     private SharedPreferences memberData;
-    private String groupCode;
+    private String groupCode, storeNameArrangeListData;
     private AlertDialog dialog;
+    private RequestQueue mQueue;
+    private StringRequest getRequest;
 
 
     public ArrangeReadyStoreFragment() {
@@ -53,17 +66,13 @@ public class ArrangeReadyStoreFragment extends Fragment {
         } else {
             dialog.dismiss();
         }
-
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                             Bundle savedInstanceState) {
 
         Log.d("MyLog", "ArrangeReadyStoreFragment_onCreateView");
-
-//        loadingDialog(true);
 
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_arrange_ready_store, container, false);
@@ -75,23 +84,94 @@ public class ArrangeReadyStoreFragment extends Fragment {
 
         Log.d("MyLog", "ArrangeReadyStoreFragment_onActivityCreated");
 
+        tableLayoutDateStore = getView().findViewById(R.id.tableLayoutDateStore);
+        memberData = getActivity().getSharedPreferences("member_data", MODE_PRIVATE);
+        groupCode = memberData.getString("MEMBER_GROUPCODE", "0");
+        storeNameArrangeListData = memberData.getString("STORE_NAME_ARRANGE_LIST", "0");
+
         btnReArrangeStore = getView().findViewById(R.id.btnReArrangeStore);
         btnReArrangeStore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // 跳轉到ArrangeStoreFragment
-               goToNextPage();
+                deleteArrangeStoreListFromServer();
             }
         });
 
-        tableLayoutDateStore = getView().findViewById(R.id.tableLayoutDateStore);
+        getStoreNameListDataFromServer(groupCode);
+    }
 
-        memberData = getActivity().getSharedPreferences("member_data", MODE_PRIVATE);
+    private void getStoreNameListDataFromServer(String groupCode) {
 
-        String storeNameArrangeListData = memberData.getString("STORE_NAME_ARRANGE_LIST", "0");
+        loadingDialog(true);
+        String url = "https://amu741129.000webhostapp.com/get_store_list.php?groupcode=" + groupCode;
+
+        mQueue = new Volley().newRequestQueue(getActivity());
+        getRequest = new StringRequest(url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String s) {
+                        loadingDialog(false);
+                        if (s.equals("-1")) {
+                            deleteArrangeStoreListFromServer();
+                        } else {
+                            getStoreNameList(s);
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        Toast.makeText(getActivity(), "伺服器忙碌中，請稍後重試", Toast.LENGTH_SHORT).show();
+                        loadingDialog(false);
+                    }
+                });
+        mQueue.add(getRequest);
+    }
+
+    private void getStoreNameList(String jsonData) {
+
+        storeList = new ArrayList<>();
+        JSONObject j;
+        String storeName;
+
+        try {
+            j = new JSONObject(jsonData);
+            int jDataLength = j.getJSONArray("data").length();
+            for (int i = 0; i < jDataLength; i++) {
+                storeName = j.getJSONArray("data").getJSONObject(i).getString("storename");
+                storeList.add(storeName);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         showDateStoreByTable(storeNameArrangeListData);
+    }
 
+    private void deleteArrangeStoreListFromServer() {
+        loadingDialog(true);
+
+        String url = "https://amu741129.000webhostapp.com/storename_arrange_list_data_delete.php?groupcode=" + groupCode;
+
+        mQueue = new Volley().newRequestQueue(getActivity());
+        getRequest = new StringRequest(url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String s) {
+                            loadingDialog(false);
+                            memberData.edit().putString("STORE_NAME_ARRANGE_LIST", "0").apply();
+                            // 跳轉到ArrangeStoreFragment
+                            goToNextPage();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        Toast.makeText(getActivity(), "伺服器忙碌中，請稍後重試", Toast.LENGTH_SHORT).show();
+                        loadingDialog(false);
+                    }
+                });
+        mQueue.add(getRequest);
     }
 
     private void goToNextPage() {
@@ -106,6 +186,8 @@ public class ArrangeReadyStoreFragment extends Fragment {
 
     private void showDateStoreByTable(String storeNameArrangeListData) {
 
+        storeNotExistList = new ArrayList<>();
+
         // 利用逗號分割字串取得資料，並存到storeArrangeList陣列
         List<StoreItem> storeArrangeList = new ArrayList<>();
         String[] storeArrangeAfterSplit = storeNameArrangeListData.split(",");
@@ -115,7 +197,6 @@ public class ArrangeReadyStoreFragment extends Fragment {
             storeItem.setStoreName(storeArrangeAfterSplit[i + 1]);
             storeArrangeList.add(storeItem);
         }
-
 
         tableLayoutDateStore.removeAllViews();
 
@@ -162,6 +243,20 @@ public class ArrangeReadyStoreFragment extends Fragment {
                 String textV = getTextVertical(storeName);
                 tv.setText(textV);
 
+                // 檢查若排程中的店家有不存在店家列表，將其標示成紅色
+                boolean b = false;
+                for (int s = 0; s < storeList.size(); s++ ) {
+                    if (storeName.equals(storeList.get(s).toString())) {
+                        b = true;
+                    }
+                }
+                if (!b) {
+                    tv.setTextColor(ContextCompat.getColor(getActivity(), R.color.red));
+                    String date = storeArrangeList.get(j).getDate().toString();
+                    String store = storeArrangeList.get(j).getStoreName().toString();
+                    storeNotExistList.add(date + " " + store);
+                }
+
                 TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(0, MP, 1);
                 tv.setLayoutParams(layoutParams);
                 tv.setGravity(Gravity.CENTER);
@@ -170,9 +265,37 @@ public class ArrangeReadyStoreFragment extends Fragment {
 
             }
             tableLayoutDateStore.addView(tableRow2, new TableLayout.LayoutParams(WC, WC, 1));
+        }
 
+        if (storeNotExistList.size() > 0) {
+            List<String> storeNameList = new ArrayList<>();
+            for (int i = 0; i < storeNotExistList.size(); i++) {
+                storeNameList.add(storeNotExistList.get(i).toString());
+            }
 
-//        loadingDialog(false);
+            dialog = new AlertDialog.Builder(getActivity())
+                    .setTitle("紅字標示店家無資料\n請新增店家或重新安排，謝謝!")
+                    .setItems(storeNameList.toArray(new String[storeNameList.size()]), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    })
+                    .setPositiveButton("重新安排", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            deleteArrangeStoreListFromServer();
+                        }
+                    })
+                    .setNegativeButton("稍待", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    })
+                    .setCancelable(true)
+                    .show();
+            dialog.getButton(dialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
+            dialog.getButton(dialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
         }
     }
 
@@ -195,9 +318,7 @@ public class ArrangeReadyStoreFragment extends Fragment {
             this.storeName = storeName;
         }
 
-        public StoreItem() {
-
-        }
+        public StoreItem() { }
 
         public String getDate() {
             return date;

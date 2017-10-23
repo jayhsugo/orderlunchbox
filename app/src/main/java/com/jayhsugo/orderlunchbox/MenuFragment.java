@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -20,10 +21,18 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,56 +47,135 @@ public class MenuFragment extends Fragment {
     private List<Item> mData;
     private TextView tvStorename, tvOrderItem;
     private Button btnOrderCheck;
-    private SharedPreferences memberData, todayOrderItemData;
+    private SharedPreferences memberData, todayOrderItemData, menuTodayJasonData;
     private RecyclerView recyclerView;
     private AlertDialog dialog;
+    private RequestQueue mQueue;
+    private StringRequest getRequest;
+    private String groupCode;
+    private MenuAdapter menuAdapter;
+    private Boolean arrangeIsChanged;
 
 
     public MenuFragment() {
 
     }
 
+    private void loadingDialog(boolean isShow) {
+        if (isShow) {
+            View view = View.inflate(getActivity(), R.layout.loading_dialog, null);
+            dialog = new AlertDialog.Builder(getActivity())
+                    .setTitle("資料載入中...")
+                    .setView(view)
+                    .setCancelable(false)
+                    .create();
+            dialog.show();
+        } else {
+            dialog.dismiss();
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d("MyLog", "onCreateView()");
         View view = inflater.inflate(R.layout.fragment_menu, container, false);
 
-        recyclerView = view.findViewById(R.id.recyclerView_menuitem);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        recyclerView.setAdapter(new MenuAdapter(inflater));
+        menuTodayJasonData = getActivity().getSharedPreferences("menu_today", MODE_PRIVATE);
 
-        getMenuItemAndPrice();
+        memberData = getActivity().getSharedPreferences("member_data", MODE_PRIVATE);
+        arrangeIsChanged = memberData.getBoolean("ARRANGE_LIST_IS_CHANGED", false);
+        groupCode = memberData.getString("MEMBER_GROUPCODE", "0");
+        String storeName = memberData.getString("TODAY_ORDER_STORENAME", "0");
+        Log.d("MyLog", "arrangeIsChanged:" + String.valueOf(arrangeIsChanged));
+        Log.d("MyLog", "groupCode:" + groupCode);
+        Log.d("MyLog", "storeName:" + storeName);
+
+
         return view;
     }
 
-    private void getMenuItemAndPrice() {
+    private void getTodayMenuItemAndPrice(String storeNameToday) {
+        Log.d("MyLog", "getTodayMenuItemAndPrice()");
+        loadingDialog(true);
+        String urlGetMenu = "https://amu741129.000webhostapp.com/get_today_menu.php";
+        menuTodayJasonData = getActivity().getSharedPreferences("menu_today", MODE_PRIVATE);
+        menuTodayJasonData.edit().clear(); // 先清除檔案內容
 
-        menuList = new ArrayList<>();
-        SharedPreferences menuTodayJasonData = getActivity().getSharedPreferences("menu_today", MODE_PRIVATE);
-        String jasonDataString = menuTodayJasonData.getString("menuTodayJasonData", "0");
+        // 建立向PHP網頁發出請求的參數網址
+        String parameterUrl = null;
+        try {
+            parameterUrl = urlGetMenu +
+                    "?groupcode=" + groupCode +
+                    "&storenametoday=" + URLEncoder.encode(storeNameToday, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
 
-            JSONObject j;
-            String menuitem = null;
-            String itemprice = null;
-
-            try {
-                j = new JSONObject(jasonDataString);
-                int jDataLength = j.getJSONArray("data").length();
-
-                for (int i = 0; i < jDataLength; i++) {
-                    menuitem = j.getJSONArray("data").getJSONObject(i).getString("menuitem");
-                    itemprice = j.getJSONArray("data").getJSONObject(i).getString("itemprice");
-                    menuList.add(new Menu(menuitem, itemprice));
-                }
-
-            } catch (JSONException e) {
-                Toast.makeText(getActivity(), "今日未提供店家訂購", Toast.LENGTH_SHORT).show();
-                e.printStackTrace();
-            }
-
+        mQueue = new Volley().newRequestQueue(getActivity());
+        getRequest = new StringRequest(parameterUrl,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String s) {
+                        loadingDialog(false);
+                        menuTodayJasonData.edit().putString("menuTodayJasonData", s).apply();
+                        getMenuItemAndPrice();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        Toast.makeText(getActivity(), "伺服器忙碌中，請稍後重試", Toast.LENGTH_SHORT).show();
+                        loadingDialog(false);
+                    }
+                });
+        mQueue.add(getRequest);
     }
 
+    private void getMenuItemAndPrice() {
+        Log.d("MyLog", "getMenuItemAndPrice()");
 
+        menuList = new ArrayList<>();
+
+        String jasonDataString = menuTodayJasonData.getString("menuTodayJasonData", "0");
+
+        JSONObject j;
+        String menuitem = null;
+        String itemprice = null;
+
+        try {
+            j = new JSONObject(jasonDataString);
+            int jDataLength = j.getJSONArray("data").length();
+
+            for (int i = 0; i < jDataLength; i++) {
+                menuitem = j.getJSONArray("data").getJSONObject(i).getString("menuitem");
+                itemprice = j.getJSONArray("data").getJSONObject(i).getString("itemprice");
+                menuList.add(new Menu(menuitem, itemprice));
+            }
+
+        } catch (JSONException e) {
+            Toast.makeText(getActivity(), "今日未提供店家訂購", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+
+        ArrayList<Item> myDataset = new ArrayList<>();
+        Log.d("MyLog", "menuList.size():"+String.valueOf(menuList.size()));
+        for (int i = 0; i < menuList.size(); i++) {
+            Item item = new Item();
+            myDataset.add(item);
+        }
+        mData = myDataset;
+
+        createRecyclerView();
+    }
+
+    private void createRecyclerView() {
+        Log.d("MyLog", "createRecyclerView()");
+        menuAdapter = new MenuAdapter(getActivity().getLayoutInflater());
+        recyclerView = getView().findViewById(R.id.recyclerView_menuitem);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setAdapter(menuAdapter);
+        recyclerView.setItemAnimator( new DefaultItemAnimator());
+    }
 
     private void orderAgainDialog() {
 
@@ -117,27 +205,23 @@ public class MenuFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        Log.d("MyLog", "onActivityCreated()");
+
 
         btnOrderCheck = getView().findViewById(R.id.btnOrderCheck);
         tvOrderItem = getView().findViewById(R.id.tvOrderItem);
         tvStorename = getView().findViewById(R.id.tvStorename);
-        ArrayList<Item> myDataset = new ArrayList<>();
-        for (int i = 0; i < menuList.size(); i++) {
-            Item item = new Item();
-            myDataset.add(item);
-        }
 
-        mData = myDataset;
         memberData = getActivity().getSharedPreferences("member_data", MODE_PRIVATE);
-        String storeName = memberData.getString("TODAY_ORDER_STORENAME", "");
+        String storeName = memberData.getString("TODAY_ORDER_STORENAME", "X");
         Log.d("MyLog", "MenuFragment_storeName:" + storeName);
-        if (storeName.equals("") || storeName.equals(" ")) {
+
+        if (storeName.equals("X")) {
             tvStorename.setText("未提供");
         } else {
             tvStorename.setText(storeName);
         }
         btnOrderCheck.setOnClickListener(btnOrderCheckOnClick);
-
 
         todayOrderItemData = getActivity().getSharedPreferences("today_order_item_data", MODE_PRIVATE);
         Boolean todayMenuIsChecked = todayOrderItemData.getBoolean("TODAY_MENU_IS_CHECKED", false);
@@ -145,6 +229,13 @@ public class MenuFragment extends Fragment {
         if (todayMenuIsChecked) {
             // 跳出視窗詢問是否需要重新訂餐
             orderAgainDialog();
+        }
+
+        if (arrangeIsChanged) {
+            memberData.edit().putBoolean("ARRANGE_LIST_IS_CHANGED", false).apply();
+            getTodayMenuItemAndPrice(storeName);
+        } else {
+            getMenuItemAndPrice();
         }
     }
 
@@ -253,7 +344,7 @@ public class MenuFragment extends Fragment {
     private void goToCheckoutPage() {
 
         MainActivity mainActivity = (MainActivity) getActivity();
-        mainActivity.initBody(1);
+        mainActivity.tabSelect(1);
 
     }
 

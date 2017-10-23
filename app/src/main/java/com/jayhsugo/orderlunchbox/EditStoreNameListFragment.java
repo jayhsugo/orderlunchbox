@@ -2,6 +2,7 @@ package com.jayhsugo.orderlunchbox;
 
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -41,11 +42,11 @@ import static android.content.Context.MODE_PRIVATE;
  */
 public class EditStoreNameListFragment extends Fragment {
 
-
     private RequestQueue mQueue;
     private StringRequest getRequest;
     private List<String> storeList;
-    private String groupCode;
+    private List<StoreItem> storeArrangeList;
+    private String groupCode, storeNameArrangeListData;
     private Button btnAddNewStore;
     private RecyclerView recyclerView;
     private StoreAdapter storeAdapter;
@@ -79,6 +80,7 @@ public class EditStoreNameListFragment extends Fragment {
 
         memberData = getActivity().getSharedPreferences("member_data", MODE_PRIVATE);
         groupCode = memberData.getString("MEMBER_GROUPCODE", "0"); // 如果沒會員檔案則取的字串0
+        storeNameArrangeListData = memberData.getString("STORE_NAME_ARRANGE_LIST", "0");
 
         getStoreNameListDataFromServer(groupCode);
 
@@ -86,6 +88,7 @@ public class EditStoreNameListFragment extends Fragment {
     }
 
     private void getStoreNameListDataFromServer(String groupCode) {
+        Log.d("MyLog", "EditStoreNameListFragment_getStoreNameListDataFromServer()");
         loadingDialog(true);
         String url = "https://amu741129.000webhostapp.com/get_store_list.php?groupcode=" + groupCode;
 
@@ -97,6 +100,7 @@ public class EditStoreNameListFragment extends Fragment {
                         Log.d("MyLog", "getStoreNameListDataFromServer_onResponse:"+ s);
                         if (s.equals("-1")) {
                             loadingDialog(false);
+
                         } else {
                             getStoreNameList(s);
                         }
@@ -113,6 +117,7 @@ public class EditStoreNameListFragment extends Fragment {
     }
 
     private void getStoreNameList(String jsonData) {
+        Log.d("MyLog", "EditStoreNameListFragment_getStoreNameList()");
         storeList = new ArrayList<>();
         JSONObject j;
         String storeName;
@@ -132,11 +137,18 @@ public class EditStoreNameListFragment extends Fragment {
     }
 
     private void createRecyclerView() {
+        Log.d("MyLog", "EditStoreNameListFragment_createRecyclerView()");
+
         recyclerView = getView().findViewById(R.id.recyclerView_storename);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(storeAdapter);
-        recyclerView.setItemAnimator( new DefaultItemAnimator());
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
         loadingDialog(false);
+
+        Log.d("MyLog", "storeNameArrangeListData:" + storeNameArrangeListData);
+        if (!storeNameArrangeListData.equals("0")) {
+            checkArrangeStoreItemIsExist();
+        }
     }
 
     @Override
@@ -155,6 +167,74 @@ public class EditStoreNameListFragment extends Fragment {
                 goToNextPage();
             }
         });
+
+    }
+
+    private void checkArrangeStoreItemIsExist() {
+
+        // 利用逗號分割字串取得資料，並存到storeArrangeList陣列
+        storeArrangeList = new ArrayList<>();
+        String[] storeArrangeAfterSplit = storeNameArrangeListData.split(",");
+        for (int i = 0; i < storeArrangeAfterSplit.length; i = i + 2) {
+            StoreItem storeItem = new StoreItem();
+            storeItem.setDate(storeArrangeAfterSplit[i]);
+            storeItem.setStoreName(storeArrangeAfterSplit[i + 1]);
+            storeArrangeList.add(storeItem);
+        }
+
+        // 檢查storeArrangeList當中是否有不在storeList陣列中的店家
+        // 並記錄到storeNotExistList
+        List<StoreItem> storeNotExistList = new ArrayList<>();
+        for (int i = 0; i < storeArrangeList.size(); i++) {
+
+            boolean storeIsExist = false;
+
+            for (int j = 0; j < storeList.size(); j++) {
+
+                Log.d("MyLog", "storeArrangeList.get(i).getStoreName():" + storeArrangeList.get(i).getStoreName());
+                Log.d("MyLog", "storeList.get(j).toString():" + storeList.get(j).toString());
+                Log.d("MyLog", "storeNotExistList.size():" + storeNotExistList.size());
+
+                if (storeArrangeList.get(i).getStoreName().equals(storeList.get(j).toString())) {
+                    storeIsExist = true;
+                }
+            }
+
+            if (!storeIsExist && !storeArrangeList.get(i).getStoreName().equals("X")) {
+                storeNotExistList.add(storeArrangeList.get(i));
+            }
+        }
+
+        if (storeNotExistList.size() != 0) {
+            showStoreNotExistListDialog(storeNotExistList);
+        }
+
+    }
+
+    private void showStoreNotExistListDialog(List<StoreItem> storeItemList) {
+        Log.d("MyLog", "storeItemList.size():" + storeItemList.size());
+
+        final List<String> storeNameList = new ArrayList<>();
+        for (int i = 0; i < storeItemList.size(); i++) {
+            storeNameList.add(storeItemList.get(i).getDate() + " " + storeItemList.get(i).getStoreName());
+        }
+
+        dialog = new AlertDialog.Builder(getActivity())
+                .setTitle("以下已安排店家無資料\n請新增店家或重新安排，謝謝!")
+                .setItems(storeNameList.toArray(new String[storeNameList.size()]), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .setPositiveButton("確認", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                })
+                .setCancelable(true)
+                .show();
+        dialog.getButton(dialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
 
     }
 
@@ -197,7 +277,7 @@ public class EditStoreNameListFragment extends Fragment {
             viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
-                    deleteMenuDialog(position, viewHolder.tvStoreName.getText().toString());
+                    deleteMenuDialog(viewHolder.getLayoutPosition(), viewHolder.tvStoreName.getText().toString());
 
                     return true;
                 }
@@ -210,19 +290,38 @@ public class EditStoreNameListFragment extends Fragment {
         }
 
         public void removeItem(int position){
+            printStoreList();
             storeList.remove(position);
             notifyItemRemoved(position);
+            printStoreList();
+        }
+    }
+
+    private void printStoreList() {
+        Log.d("MyLog", "storeList.size():" + storeList.size());
+        for (int i = 0; i < storeList.size(); i++ ) {
+            Log.d("MyLog", "storeList.item():" + storeList.get(i).toString());
         }
     }
 
     private void deleteMenuDialog(final int position, final String storeName) {
 
+        Log.d("MyLog", "storeArrangeList.size():" + String.valueOf(storeArrangeList.size()));
+        String title = null, message = null;
+        for (int i = 0; i < storeArrangeList.size(); i++ ) {
+            if (storeName.equals(storeArrangeList.get(i).getStoreName())) {
+                title = "確定刪除 " + storeName + " 嗎?";
+                message = storeName + " 已安排在排程中\n刪除後請重新安排菜單";
+            }
+        }
+
         dialog = new AlertDialog.Builder(getActivity())
-                .setTitle("確定刪除 "+ storeName + " 嗎?")
+                .setTitle(title)
+                .setMessage(message)
                 .setPositiveButton("確認", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        loadingDialog(true);
+
                         deleteStoreMenuData(storeName, position);
                     }
                 })
@@ -240,8 +339,9 @@ public class EditStoreNameListFragment extends Fragment {
     }
 
     private void deleteStoreMenuData(String storeName, final int position) {
-        // 建立向PHP網頁發出請求的參數網址
+        loadingDialog(true);
 
+        // 建立向PHP網頁發出請求的參數網址
         String mUrl = "https://amu741129.000webhostapp.com/store_name_data_delete.php";
 
         String parameterUrl = null;
@@ -259,13 +359,13 @@ public class EditStoreNameListFragment extends Fragment {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String s) {
+                        loadingDialog(false);
                         if (s.equals("1")) {
                             Toast.makeText(getActivity(), "資料刪除成功", Toast.LENGTH_SHORT).show();
                             storeAdapter.removeItem(position);
                         } else {
                             Toast.makeText(getActivity(), "未知錯誤，請重試", Toast.LENGTH_SHORT).show();
                         }
-                        loadingDialog(false);
                     }
                 },
                 new Response.ErrorListener() {
@@ -278,12 +378,37 @@ public class EditStoreNameListFragment extends Fragment {
     }
 
     private void goToNextPage() {
-        getActivity().getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.content_frame, new EditStoreMenuFragment(), null)
-                        .addToBackStack(null)
-                        .commit();
+
+        Intent intent = new Intent(getActivity(), EditStoreMenuActivity.class);
+        getActivity().startActivityForResult(intent, 1);
     }
 
+    private static class StoreItem {
+        String date;
+        String storeName;
 
+        public StoreItem(String date, String storeName) {
+            super();
+            this.date = date;
+            this.storeName = storeName;
+        }
+
+        public StoreItem() { }
+
+        public String getDate() {
+            return date;
+        }
+
+        public void setDate(String date) {
+            this.date = date;
+        }
+
+        public String getStoreName() {
+            return storeName;
+        }
+
+        public void setStoreName(String storeName) {
+            this.storeName = storeName;
+        }
+    }
 }

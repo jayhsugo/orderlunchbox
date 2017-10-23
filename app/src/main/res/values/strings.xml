@@ -108,6 +108,10 @@
         <item>訂購負責人介面</item>
         <item>一般訂購人介面</item>
     </string-array>
+    <string name="title_activity_bottom_navigation">BottomNavigationActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
     >
 
 </resources>

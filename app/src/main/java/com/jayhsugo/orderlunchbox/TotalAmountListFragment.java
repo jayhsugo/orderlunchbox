@@ -1,10 +1,12 @@
 package com.jayhsugo.orderlunchbox;
 
 
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -64,8 +66,6 @@ public class TotalAmountListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        loadingDialog(true);
-
         View view = inflater.inflate(R.layout.fragment_total_amount_list, container, false);
 
         RecyclerView recyclerView = view.findViewById(R.id.recyclerView_total_amount_list);
@@ -106,30 +106,60 @@ public class TotalAmountListFragment extends Fragment {
                         .beginTransaction()
                         .replace(R.id.content_frame, new TotalAmountFragment(), null)
                         .addToBackStack(null)
-                        .commit();
+                       .commit();
             }
         });
 
-
-        int TotalAmount = 0;
-        int totalNumber = 0;
-
-        if (totalAmountList.size() == 0 ) {
-            Toast.makeText(getActivity(), "今日尚無人訂餐，請稍候再試，謝謝!", Toast.LENGTH_SHORT).show();
+        Log.d("MyLog", "storeDataJson:" + storeDataJson);
+        if (storeDataJson.equals("0")) {
+            goToArrangeStoreFragment();
         } else {
-            Log.d("MyLog", "totalAmountList.size():" + String.valueOf(totalAmountList.size()));
-            for (int i = 0; i < totalAmountList.size(); i++) {
-                int price = Integer.parseInt(totalAmountList.get(i).getItemprice());
-                int number = Integer.parseInt(totalAmountList.get(i).getItemnumber());
-                TotalAmount = (price * number) + TotalAmount;
-                totalNumber = number + totalNumber;
+
+            int TotalAmount = 0;
+            int totalNumber = 0;
+
+            if (totalAmountList.size() == 0) {
+                Toast.makeText(getActivity(), "今日尚無人訂餐，請稍候再試，謝謝!", Toast.LENGTH_SHORT).show();
+            } else {
+                Log.d("MyLog", "totalAmountList.size():" + String.valueOf(totalAmountList.size()));
+                for (int i = 0; i < totalAmountList.size(); i++) {
+                    int price = Integer.parseInt(totalAmountList.get(i).getItemprice());
+                    int number = Integer.parseInt(totalAmountList.get(i).getItemnumber());
+                    TotalAmount = (price * number) + TotalAmount;
+                    totalNumber = number + totalNumber;
+                }
             }
+
+            tvTotalAmount.setText(String.valueOf(TotalAmount) + " 元");
+            tvTotalNumber.setText(String.valueOf(totalNumber) + " 個");
+
+            showTodayOrderStoreData(storeDataJson);
         }
+    }
 
-        tvTotalAmount.setText(String.valueOf(TotalAmount)+" 元");
-        tvTotalNumber.setText(String.valueOf(totalNumber)+" 個");
+    private void goToArrangeStoreFragment() {
 
-        showTodayOrderStoreData(storeDataJson);
+        dialog = new AlertDialog.Builder(getActivity())
+                .setTitle("今日尚未安排菜單")
+                .setMessage("是否現在進行安排?")
+                .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        AdminMainActivity adminMainActivity = (AdminMainActivity) getActivity();
+                        adminMainActivity.tabSelect(1);
+                    }
+                })
+                .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                })
+                .setCancelable(false)
+                .create();
+        dialog.show();
+        dialog.getButton(dialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
+        dialog.getButton(dialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
 
     }
 
@@ -151,7 +181,6 @@ public class TotalAmountListFragment extends Fragment {
             e.printStackTrace();
         }
 
-        loadingDialog(false);
     }
 
     private class TotalAmountListAdapter extends RecyclerView.Adapter<TotalAmountListAdapter.ViewHolder> {

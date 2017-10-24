@@ -63,9 +63,17 @@ public class CreateAdminMemberActivity extends AppCompatActivity {
 
     private void findViews() {
         etUsername = (EditText) findViewById(R.id.etUserName);
+        etUsername.addTextChangedListener(new MaxTextLengthWatcher(6)); // 限制字串的字元長度=6
+        
         etGroupCode = (EditText) findViewById(R.id.etGroupCode);
         etGroupName = (EditText) findViewById(R.id.etGroupName);
         etGroupPassword = (EditText) findViewById(R.id.etGroupPassword);
+
+        Intent intent = getIntent();
+        Boolean b = intent.getBooleanExtra("EditData", false);
+        if (b) {
+            etGroupCode.setEnabled(false);
+        }
 
         memberData = getSharedPreferences("member_data", MODE_PRIVATE);
         userId = memberData.getString("MEMBER_USERID", "0");
@@ -125,11 +133,12 @@ public class CreateAdminMemberActivity extends AppCompatActivity {
             member.setGroupPassword(groupPassword);
 
             memberDataInsert(member);
-            loadingDialog(true);
+
         }
     }
 
     public void memberDataInsert(Member member) {
+        loadingDialog(true);
         // 建立向PHP網頁發出請求的參數網址
         String parameterUrl = null;
 
@@ -158,6 +167,7 @@ public class CreateAdminMemberActivity extends AppCompatActivity {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String s) {
+                        loadingDialog(false);
                         Log.d("MyLog", "CerateAdminMemberActivity_memberDataInsert_Response:" + s);
                         memberDataResult(s.toString());
                     }
@@ -175,33 +185,31 @@ public class CreateAdminMemberActivity extends AppCompatActivity {
 
     public void memberDataResult(String s) {
         // 解讀伺服器回傳訊息代碼
-        String resultMsg;
+        String resultMsg = null;
         if (s.equals("1")) {
-            resultMsg = "以群組代號已存在，請重新輸入!";
+            resultMsg = "群組代號已存在，請重新輸入!\n若要加入該群組成為共同管理員\n需輸入正確密碼";
         } else if (s.equals("2")) {
-            resultMsg = "群組代碼已存在，僅新增會員資料";
+            resultMsg = "新增為群組共同管理員";
             memberDataSave();
         } else if (s.equals("3")) {
             resultMsg = "新增成功";
             memberDataSave();
-        } else if (s.equals("4")) {
-            resultMsg = "暫時無法建立";
         } else if (s.equals("5")) {
-            resultMsg = "資料更新成功";
+            resultMsg = "更新成功";
             memberDataSave();
         } else if (s.equals("6")) {
             resultMsg = "群組代碼已存在，請重新輸入";
         } else if (s.equals("7")) {
-            resultMsg = "資料更新成功";
+            resultMsg = "更新成功"; // 群組代碼有更新，必須清除原本相關資料
+
             memberDataSave();
-        } else {
-            resultMsg = "未知狀態";
         }
         Toast.makeText(CreateAdminMemberActivity.this, resultMsg, Toast.LENGTH_SHORT).show();
 
     }
 
     public void getStoreArrangeList(String groupCode) {
+        loadingDialog(true);
         String url = "https://amu741129.000webhostapp.com/get_store_arrange_list.php?groupcode=" + groupCode;
 
         getRequest = new StringRequest(url,

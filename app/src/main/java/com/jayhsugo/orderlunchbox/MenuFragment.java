@@ -83,13 +83,12 @@ public class MenuFragment extends Fragment {
         menuTodayJasonData = getActivity().getSharedPreferences("menu_today", MODE_PRIVATE);
 
         memberData = getActivity().getSharedPreferences("member_data", MODE_PRIVATE);
-        arrangeIsChanged = memberData.getBoolean("ARRANGE_LIST_IS_CHANGED", false);
+//        arrangeIsChanged = memberData.getBoolean("ARRANGE_LIST_IS_CHANGED", false);
         groupCode = memberData.getString("MEMBER_GROUPCODE", "0");
         String storeName = memberData.getString("TODAY_ORDER_STORENAME", "0");
         Log.d("MyLog", "arrangeIsChanged:" + String.valueOf(arrangeIsChanged));
         Log.d("MyLog", "groupCode:" + groupCode);
         Log.d("MyLog", "storeName:" + storeName);
-
 
         return view;
     }
@@ -139,8 +138,8 @@ public class MenuFragment extends Fragment {
         String jasonDataString = menuTodayJasonData.getString("menuTodayJasonData", "0");
 
         JSONObject j;
-        String menuitem = null;
-        String itemprice = null;
+        String menuitem;
+        String itemprice;
 
         try {
             j = new JSONObject(jasonDataString);
@@ -231,12 +230,12 @@ public class MenuFragment extends Fragment {
             orderAgainDialog();
         }
 
-        if (arrangeIsChanged) {
-            memberData.edit().putBoolean("ARRANGE_LIST_IS_CHANGED", false).apply();
+//        if (arrangeIsChanged) {
+//            memberData.edit().putBoolean("ARRANGE_LIST_IS_CHANGED", false).apply();
             getTodayMenuItemAndPrice(storeName);
-        } else {
+//        } else {
             getMenuItemAndPrice();
-        }
+//        }
     }
 
 

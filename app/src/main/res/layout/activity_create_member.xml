@@ -17,7 +17,9 @@
                 android:id="@+id/tvUserName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/tvUserName" />
+                android:text="@string/tvUserName"
+                android:textSize="16sp"
+                android:textColor="@color/colorPrimary"/>
 
             <EditText
                 android:id="@+id/etUserName"
@@ -25,7 +27,8 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="textPersonName"
-                android:text="" />
+                android:text=""
+                android:textSize="25sp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -38,15 +41,19 @@
                 android:id="@+id/tvGroupCode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/tvGroupCode_member" />
+                android:text="@string/tvGroupCode_member"
+                android:textSize="16sp"
+                android:textColor="@color/colorPrimary"/>
 
             <EditText
                 android:id="@+id/etGroupCode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
+                android:maxLength="10"
                 android:inputType="textPersonName"
                 android:text=""
+                android:textSize="25sp"
                 android:digits="0123456789abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" />
         </LinearLayout>
 
@@ -60,15 +67,19 @@
                 android:id="@+id/tvGroupPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/tvGroupPassword_member" />
+                android:text="@string/tvGroupPassword_member"
+                android:textSize="16sp"
+                android:textColor="@color/colorPrimary"/>
 
             <EditText
                 android:id="@+id/etGroupPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
+                android:maxLength="20"
                 android:inputType="textPersonName"
                 android:text=""
+                android:textSize="25sp"
                 android:digits="0123456789abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 tools:ignore="TextFields" />
         </LinearLayout>

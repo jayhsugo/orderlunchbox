@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
+        android:maxLength="20"
         android:hint="@string/text_OrderItem"
         android:text="" />
 
@@ -17,6 +18,7 @@
         android:id="@+id/etItemPrice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:maxLength="3"
         android:hint="@string/text_ItemPrice"
         android:inputType="number" />
 

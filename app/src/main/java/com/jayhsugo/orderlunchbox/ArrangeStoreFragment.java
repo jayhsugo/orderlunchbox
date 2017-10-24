@@ -167,7 +167,7 @@ public class ArrangeStoreFragment extends Fragment {
             storeNameArrangeListData = storeNameArrangeListData + dateList.get(i).toString() + "," + storeNameArrangeList.get(i).toString() + ",";
         }
 
-        memberData.edit().putBoolean("ARRANGE_LIST_IS_CHANGED", true).apply();
+//        memberData.edit().putBoolean("ARRANGE_LIST_IS_CHANGED", true).apply();
         memberData.edit().putString("STORE_NAME_ARRANGE_LIST", storeNameArrangeListData).apply();
         memberData.edit().putString("TODAY_ORDER_STORENAME", storeNameArrangeList.get(0).toString()).apply();
 
@@ -208,7 +208,7 @@ public class ArrangeStoreFragment extends Fragment {
     }
 
     private void checkTodayMemberOrderListDelete() {
-        new AlertDialog.Builder(getActivity())
+        dialog = new AlertDialog.Builder(getActivity())
                 .setTitle("是否需要清空今日會員訂購菜單?")
                 .setPositiveButton("YES", new DialogInterface.OnClickListener() {
                     @Override
@@ -393,6 +393,7 @@ public class ArrangeStoreFragment extends Fragment {
                 tv.setText(dateFormate);
 
                 TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(0, MP, 1);
+                layoutParams.setMargins(1, 0, 1, 0);
                 tv.setLayoutParams(layoutParams);
                 tv.setTextColor(ContextCompat.getColor(getActivity(), R.color.columnTitleText));
                 tv.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -417,6 +418,7 @@ public class ArrangeStoreFragment extends Fragment {
             // 設定第一天~第七天的店家名稱
             for(int c=0; c<7; c++) {
                 final TextView tv=new TextView(getActivity());
+                tv.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.listBackground));
 
                 final int finalJ = j;
                 tv.setOnClickListener(new View.OnClickListener() {
@@ -448,6 +450,7 @@ public class ArrangeStoreFragment extends Fragment {
                 storeNameArrangeList.add(storeName);
 
                 TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(0, MP, 1);
+                layoutParams.setMargins(5, 5, 5, 10);
                 tv.setLayoutParams(layoutParams);
                 tv.setGravity(Gravity.CENTER);
 

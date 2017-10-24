@@ -29,14 +29,16 @@ public class LoginActivity extends AppCompatActivity {
     public void onBtnLoginByUUIDClick(View view) {
 
         if (radioGroupMemberRank.getCheckedRadioButtonId() == R.id.radioButtonMember) {
-            Intent intentMemberRank = new Intent();
-            intentMemberRank.setClass(this, CreateMemberActivity.class);
-            startActivity(intentMemberRank);
+            Intent intent = new Intent();
+            intent.putExtra("EditData", false);
+            intent.setClass(this, CreateMemberActivity.class);
+            startActivity(intent);
             finish();
         } else if (radioGroupMemberRank.getCheckedRadioButtonId() == R.id.radioButtonAdmin) {
-            Intent intentMemberRank = new Intent();
-            intentMemberRank.setClass(this, CreateAdminMemberActivity.class);
-            startActivity(intentMemberRank);
+            Intent intent = new Intent();
+            intent.putExtra("EditData", false);
+            intent.setClass(this, CreateAdminMemberActivity.class);
+            startActivity(intent);
             finish();
         } else {
             String text = "請先選擇身份別";

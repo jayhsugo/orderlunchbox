@@ -18,7 +18,9 @@
                 android:id="@+id/tvUserName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/tvUserName" />
+                android:text="@string/tvUserName"
+                android:textSize="16sp"
+                android:textColor="@color/colorPrimary"/>
 
             <EditText
                 android:id="@+id/etUserName"
@@ -26,7 +28,8 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="textPersonName"
-                android:text="" />
+                android:text=""
+                android:textSize="25sp"/>
 
         </LinearLayout>
 
@@ -40,15 +43,19 @@
                 android:id="@+id/tvGroupName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/tvGroupName" />
+                android:text="@string/tvGroupName"
+                android:textSize="16sp"
+                android:textColor="@color/colorPrimary"/>
 
             <EditText
                 android:id="@+id/etGroupName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
+                android:maxLength="10"
                 android:inputType="textPersonName"
-                android:text="" />
+                android:text=""
+                android:textSize="25sp"/>
 
         </LinearLayout>
 
@@ -62,15 +69,19 @@
                 android:id="@+id/tvGroupCode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/tvGroupCode" />
+                android:text="@string/tvGroupCode"
+                android:textSize="16sp"
+                android:textColor="@color/colorPrimary"/>
 
             <EditText
                 android:id="@+id/etGroupCode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
+                android:maxLength="10"
                 android:inputType="textPersonName"
                 android:text=""
+                android:textSize="25sp"
                 android:digits="0123456789abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" />
 
         </LinearLayout>
@@ -85,15 +96,19 @@
                 android:id="@+id/tvGroupPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/tvGroupPassword" />
+                android:text="@string/tvGroupPassword"
+                android:textSize="16sp"
+                android:textColor="@color/colorPrimary"/>
 
             <EditText
                 android:id="@+id/etGroupPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
+                android:maxLength="20"
                 android:inputType="textPersonName"
                 android:text=""
+                android:textSize="25sp"
                 android:digits="0123456789abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 tools:ignore="TextFields" />
         </LinearLayout>

@@ -217,6 +217,7 @@ public class ArrangeReadyStoreFragment extends Fragment {
                 tv.setText(dateFormate);
 
                 TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(0, MP, 1);
+                layoutParams.setMargins(1, 0, 1, 0);
                 tv.setLayoutParams(layoutParams);
                 tv.setTextColor(ContextCompat.getColor(getActivity(), R.color.columnTitleText));
                 tv.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -242,6 +243,8 @@ public class ArrangeReadyStoreFragment extends Fragment {
                 String storeName = storeArrangeList.get(j).getStoreName().toString();
                 String textV = getTextVertical(storeName);
                 tv.setText(textV);
+                tv.setTextColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
+                tv.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.listBackground));
 
                 // 檢查若排程中的店家有不存在店家列表，將其標示成紅色
                 boolean b = false;
@@ -250,7 +253,7 @@ public class ArrangeReadyStoreFragment extends Fragment {
                         b = true;
                     }
                 }
-                if (!b) {
+                if (!b && !(storeName.equals("X"))) {
                     tv.setTextColor(ContextCompat.getColor(getActivity(), R.color.red));
                     String date = storeArrangeList.get(j).getDate().toString();
                     String store = storeArrangeList.get(j).getStoreName().toString();
@@ -258,6 +261,7 @@ public class ArrangeReadyStoreFragment extends Fragment {
                 }
 
                 TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(0, MP, 1);
+                layoutParams.setMargins(5, 5, 5, 10);
                 tv.setLayoutParams(layoutParams);
                 tv.setGravity(Gravity.CENTER);
                 tableRow2.addView(tv);

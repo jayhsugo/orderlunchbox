@@ -125,13 +125,15 @@ public class MemberDataFragment extends Fragment {
         @Override
         public void onClick(View view) {
             if (isAdmin.equals("1")) {
-                Intent intentMemberRank = new Intent();
-                intentMemberRank.setClass(getActivity(), CreateAdminMemberActivity.class);
-                startActivity(intentMemberRank);
+                Intent intent = new Intent();
+                intent.putExtra("EditData", true);
+                intent.setClass(getActivity(), CreateAdminMemberActivity.class);
+                startActivity(intent);
             } else {
-                Intent intentMemberRank = new Intent();
-                intentMemberRank.setClass(getActivity(), CreateMemberActivity.class);
-                startActivity(intentMemberRank);
+                Intent intent = new Intent();
+                intent.putExtra("EditData", true);
+                intent.setClass(getActivity(), CreateMemberActivity.class);
+                startActivity(intent);
             }
         }
     };

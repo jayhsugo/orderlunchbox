@@ -63,8 +63,16 @@ public class CreateMemberActivity extends AppCompatActivity {
 
     private void findViews() {
         etUsername = (EditText) findViewById(R.id.etUserName);
+        etUsername.addTextChangedListener(new MaxTextLengthWatcher(6)); // 限制字串的字元長度=6
+
         etGroupCode = (EditText) findViewById(R.id.etGroupCode);
         etGroupPassword = (EditText) findViewById(R.id.etGroupPassword);
+
+        Intent intent = getIntent();
+        Boolean b = intent.getBooleanExtra("EditData", false);
+        if (b) {
+            etGroupCode.setEnabled(false);
+        }
 
         memberData = getSharedPreferences("member_data", MODE_PRIVATE);
         userId = memberData.getString("MEMBER_USERID", "0");
@@ -165,7 +173,7 @@ public class CreateMemberActivity extends AppCompatActivity {
         // 解讀伺服器回傳訊息代碼
         String resultMsg;
         if (s.equals("1")) {
-            resultMsg = "以群組代號或密碼不存在或錯誤，請重新輸入!";
+            resultMsg = "群組代號或密碼不存在或錯誤，請重新輸入!";
         } else if (s.equals("0")) {
             resultMsg = "暫時無法建立";
         } else {

@@ -212,12 +212,15 @@ public class AdminMainActivity extends AppCompatActivity {
 
         if (keyCode == KeyEvent.KEYCODE_BACK) { // 攔截返回鍵
             AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setTitle("確認視窗")
-                    .setMessage("確定要結束應用程式嗎?")
+                    .setTitle("QQ")
+                    .setMessage("確定要離開嗎?")
                     .setPositiveButton("確定", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            finish();
+                            Intent intentHome = new Intent(Intent.ACTION_MAIN);
+                            intentHome.addCategory(Intent.CATEGORY_HOME);
+                            intentHome.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intentHome);
                         }
                     })
                     .setNegativeButton("取消", new DialogInterface.OnClickListener() {

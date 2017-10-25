@@ -82,7 +82,7 @@
                 android:inputType="textPersonName"
                 android:text=""
                 android:textSize="25sp"
-                android:digits="0123456789abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" />
+                android:digits="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" />
 
         </LinearLayout>
 
@@ -109,7 +109,7 @@
                 android:inputType="textPersonName"
                 android:text=""
                 android:textSize="25sp"
-                android:digits="0123456789abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                android:digits="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 tools:ignore="TextFields" />
         </LinearLayout>
 

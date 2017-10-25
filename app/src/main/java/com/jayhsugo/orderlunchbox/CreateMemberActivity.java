@@ -124,10 +124,10 @@ public class CreateMemberActivity extends AppCompatActivity {
 
             memberDataInsert(member);
         }
-        loadingDialog(true);
     }
 
     public void memberDataInsert(Member member) {
+        loadingDialog(true);
         // 建立向PHP網頁發出請求的參數網址
         String parameterUrl = null;
 
@@ -155,6 +155,7 @@ public class CreateMemberActivity extends AppCompatActivity {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String s) {
+                        loadingDialog(false);
                         groupName = s.toString();
                         memberDataResult(s);
                     }
@@ -184,7 +185,7 @@ public class CreateMemberActivity extends AppCompatActivity {
     }
 
     public void memberDataSave() {
-
+        loadingDialog(true);
         memberData.edit()
                 .putString("MEMBER_USERID", userId)
                 .putString("MEMBER_NAME", userName)
@@ -204,7 +205,6 @@ public class CreateMemberActivity extends AppCompatActivity {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String s) {
-                        loadingDialog(false);
                         memberData.edit().putString("STORE_NAME_ARRANGE_LIST", s).apply();
                         Log.d("MyLog", "CreateMemberActivity_STORE_NAME_ARRANGE_LIST:" + s);
                         if (s.equals("0")) {

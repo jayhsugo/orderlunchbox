@@ -93,4 +93,25 @@ public class HistorySQLiteHelper extends SQLiteOpenHelper {
         return  historyVOList;
 
     }
+
+    public List<HistoryVO> getByDate(String date) {
+        SQLiteDatabase db = getReadableDatabase();
+        String[] columns = {COL_ORDERDATE, COL_STORENAME, COL_ORDERITEM, COL_ITEMPRICE, COL_ITEMNUMBER};
+        String selection = COL_ORDERDATE + " = ?"; // whereClause：是否要加上刪除條件，同SQL的WHERE功能
+        String[] selectionArgs = {date}; // whereArgs：指定WHERE條件的" ? "為何
+        Cursor cursor = db.query(TABLE_NAME, columns, selection, selectionArgs, null, null, null);  // 語法參考: db.query(table, columns, selection, selectionArgs, groupBy, having, orderBy)
+        List<HistoryVO> historyVOList = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            int id = cursor.getInt(0);
+            String orderdate = cursor.getString(0);
+            String storename = cursor.getString(1);
+            String orderitem = cursor.getString(2);
+            String itemprice = cursor.getString(3);
+            String itemnumber = cursor.getString(4);
+            HistoryVO historyVO = new HistoryVO(id, storename, orderitem, itemprice, itemnumber, orderdate);
+            historyVOList.add(historyVO);
+        }
+        cursor.close();
+        return  historyVOList;
+    }
 }

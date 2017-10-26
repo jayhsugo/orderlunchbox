@@ -90,14 +90,14 @@ public class OrderListFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(new OrderAdapter(inflater));
 
+        todayOrderItemData = getActivity().getSharedPreferences("today_order_item_data", MODE_PRIVATE);
+
         getOrderItemAndPrice();
         getMenuItemAndPrice();
         return view;
     }
 
     private void getOrderItemAndPrice() {
-
-        todayOrderItemData = getActivity().getSharedPreferences("today_order_item_data", MODE_PRIVATE);
         String todayOrderDataStringBeforeSplit = todayOrderItemData.getString("TODAY_ORDER_ITEM_DATA", "0");
 
         // 利用逗號分割字串取得資料，並存到orderDataList陣列
@@ -154,7 +154,6 @@ public class OrderListFragment extends Fragment {
 
         // 推播提醒繳費通知服務
         payRemindService();
-        Log.d("payRemindService", "0");
     }
 
     private void payRemindService() {
@@ -170,27 +169,19 @@ public class OrderListFragment extends Fragment {
         Log.d("MyLog", "payRemindServiceIsOpen:"+String.valueOf(payRemindServiceIsOpen));
 
         if (todayIsPaid) {
-            Log.d("MyLog", "1");
             if (payRemindServiceIsOpen) {
                 // 關閉Service
                 getActivity().stopService(intent);
-
                 todayOrderItemData.edit().putBoolean("SERVICE_IS_OPEN", false).apply();
-                Log.d("MyLog", "2");
             }
         } else {
-            Log.d("payRemindService", "3");
             if (!payRemindServiceIsOpen) {
                 // 開啟Service
                 getActivity().startService(intent);
 
                 todayOrderItemData.edit().putBoolean("SERVICE_IS_OPEN", true).apply();
-                Log.d("MyLog", "4");
             }
         }
-
-        Log.d("MyLog", "5");
-
     }
 
 
@@ -282,7 +273,6 @@ public class OrderListFragment extends Fragment {
 
             // 推播提醒繳費通知服務
             payRemindService();
-            Log.d("payRemindService", "6");
         }
 
     };
@@ -337,7 +327,6 @@ public class OrderListFragment extends Fragment {
     private void getMenuItemAndPrice() {
         orderList = new ArrayList<>();
 
-        SharedPreferences todayOrderItemData = getActivity().getSharedPreferences("today_order_item_data", MODE_PRIVATE);
         String jasonDataString = todayOrderItemData.getString("TODAY_ORDER_ITEM_JSON", "0");
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM-dd" + " E");
@@ -401,8 +390,6 @@ public class OrderListFragment extends Fragment {
         }
 
         // 將結果已字串形式儲存
-        SharedPreferences todayOrderItemData = getActivity().getSharedPreferences("today_order_item_data", MODE_PRIVATE);
-        todayOrderItemData.edit().clear();
         todayOrderItemData.edit().putString("TODAY_ORDER_ITEM_DATA", OrderItemTotalText).apply();
     }
 
@@ -412,7 +399,6 @@ public class OrderListFragment extends Fragment {
         String mUrl = "https://amu741129.000webhostapp.com/member_order_data_insert.php";
         String parameterUrl = null;
 
-        SharedPreferences todayOrderItemData = getActivity().getSharedPreferences("today_order_item_data", MODE_PRIVATE);
         String todayOrderItemDataString = todayOrderItemData.getString("TODAY_ORDER_ITEM_DATA", "0");
 
         SharedPreferences memberData = getActivity().getSharedPreferences("member_data", MODE_PRIVATE);

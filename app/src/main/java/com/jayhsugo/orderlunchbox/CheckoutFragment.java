@@ -44,7 +44,7 @@ public class CheckoutFragment extends Fragment {
     private Button btnPaymentCheck;
     private HistorySQLiteHelper helper;
     private List<HistoryVO> historyList;
-    private String storename;
+    private String storeName;
     private String today;
     private int totalAmount;
     private SharedPreferences todayOrderItemData;
@@ -131,10 +131,15 @@ public class CheckoutFragment extends Fragment {
         showOrderTotalAmount();
 
         SharedPreferences memberData = getActivity().getSharedPreferences("member_data", MODE_PRIVATE);
-        storename = memberData.getString("TODAY_ORDER_STORENAME","未點餐");
+        storeName = memberData.getString("TODAY_ORDER_STORENAME","未點餐");
 
         btnPaymentCheck.setOnClickListener(btnPaymentCheckOnClick);
-        tvStorename.setText(storename);
+
+        if (storeName.equals("X")) {
+            tvStorename.setText("未提供");
+        } else {
+            tvStorename.setText(storeName);
+        }
 
 
         Boolean todayMenuIsChecked = todayOrderItemData.getBoolean("TODAY_MENU_IS_CHECKED", false);
@@ -256,7 +261,7 @@ public class CheckoutFragment extends Fragment {
 
         if (Integer.valueOf(orderList.size()).intValue() > 0) {
             for (int i = 0; i < orderList.size(); i++) {
-                String storeName = storename;
+                String storeName = this.storeName;
                 String orderItem = orderList.get(i).getOrderItem();
                 String itemPrice = orderList.get(i).getItemPrice();
                 String itemNumber = orderList.get(i).getItemNumber();
@@ -347,8 +352,7 @@ public class CheckoutFragment extends Fragment {
         }
 
         // 將結果已字串形式儲存
-        SharedPreferences todayOrderItemData = getActivity().getSharedPreferences("today_order_item_data", MODE_PRIVATE);
-        todayOrderItemData.edit().clear();
+//        todayOrderItemData.edit().clear().apply();
         todayOrderItemData.edit().putString("TODAY_ORDER_ITEM_DATA", OrderItemTotalText).apply();
         todayOrderItemData.edit().putBoolean("TODAY_ORDER_ITEM_IS_CHECKED", true).apply();
     }

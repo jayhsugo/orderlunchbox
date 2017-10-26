@@ -259,7 +259,7 @@ public class CreateMemberActivity extends AppCompatActivity {
     private void getTodayMenuItemAndPrice(String storeNameToday) {
         String urlGetMenu = "https://amu741129.000webhostapp.com/get_today_menu.php";
         menuTodayJasonData = getSharedPreferences("menu_today", MODE_PRIVATE);
-        menuTodayJasonData.edit().clear(); // 先清除檔案內容
+//        menuTodayJasonData.edit().clear().apply(); // 先清除檔案內容
         
         // 建立向PHP網頁發出請求的參數網址
         String parameterUrl = null;

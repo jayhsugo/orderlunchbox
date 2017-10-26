@@ -33,6 +33,7 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,9 +53,12 @@ public class MenuFragment extends Fragment {
     private AlertDialog dialog;
     private RequestQueue mQueue;
     private StringRequest getRequest;
-    private String groupCode;
+    private String groupCode, storeName, today;
     private MenuAdapter menuAdapter;
     private Boolean arrangeIsChanged;
+
+    private List<HistoryVO> historyList;
+    private HistorySQLiteHelper helper;
 
 
     public MenuFragment() {
@@ -85,12 +89,83 @@ public class MenuFragment extends Fragment {
         memberData = getActivity().getSharedPreferences("member_data", MODE_PRIVATE);
 //        arrangeIsChanged = memberData.getBoolean("ARRANGE_LIST_IS_CHANGED", false);
         groupCode = memberData.getString("MEMBER_GROUPCODE", "0");
-        String storeName = memberData.getString("TODAY_ORDER_STORENAME", "0");
+        storeName = memberData.getString("TODAY_ORDER_STORENAME", "X");
         Log.d("MyLog", "arrangeIsChanged:" + String.valueOf(arrangeIsChanged));
         Log.d("MyLog", "groupCode:" + groupCode);
         Log.d("MyLog", "storeName:" + storeName);
 
+        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd" + " E");
+        today = sdf.format(new java.util.Date());
+
+        if (helper == null) {
+            helper = new HistorySQLiteHelper(getActivity());
+        }
+        historyList = new ArrayList<>();
+        historyList = helper.getByDate(today);
+
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Log.d("MyLog", "onActivityCreated()");
+
+        btnOrderCheck = getView().findViewById(R.id.btnOrderCheck);
+        tvOrderItem = getView().findViewById(R.id.tvOrderItem);
+        tvStorename = getView().findViewById(R.id.tvStorename);
+
+        btnOrderCheck.setOnClickListener(btnOrderCheckOnClick);
+
+        todayOrderItemData = getActivity().getSharedPreferences("today_order_item_data", MODE_PRIVATE);
+        Boolean todayMenuIsChecked = todayOrderItemData.getBoolean("TODAY_MENU_IS_CHECKED", false);
+
+        // 檢查今日店家是否有更動
+        Log.d("MyLog", "historyStorename:" + historyList.size());
+        if (historyList.size() != 0) {
+            if (!storeName.equals(historyList.get(0).getStorename().toString())) {
+                cleanOrderDataDialog();
+                deleteMemberOrderDataFromServer();
+            } else {
+                if (todayMenuIsChecked) {
+                    // 跳出視窗詢問是否需要重新訂餐
+                    orderAgainDialog();
+                } else {
+                    createMenu();
+                }
+            }
+        } else {
+            if (todayMenuIsChecked) {
+                // 跳出視窗詢問是否需要重新訂餐
+                orderAgainDialog();
+            } else {
+                createMenu();
+            }
+        }
+    }
+
+    private void cleanOrderDataDialog() {
+        dialog = new AlertDialog.Builder(getActivity())
+                .setTitle("今日店家有異動!")
+                .setMessage("將清除訂單，請重新點菜，謝謝")
+                .setPositiveButton("確認", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                })
+                .setCancelable(false)
+                .create();
+        dialog.show();
+        dialog.getButton(dialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
+    }
+
+    private void createMenu() {
+        if (storeName.equals("X")) {
+            tvStorename.setText("未提供");
+        } else {
+            tvStorename.setText(storeName);
+            getTodayMenuItemAndPrice(storeName);
+        }
     }
 
     private void getTodayMenuItemAndPrice(String storeNameToday) {
@@ -98,7 +173,7 @@ public class MenuFragment extends Fragment {
         loadingDialog(true);
         String urlGetMenu = "https://amu741129.000webhostapp.com/get_today_menu.php";
         menuTodayJasonData = getActivity().getSharedPreferences("menu_today", MODE_PRIVATE);
-        menuTodayJasonData.edit().clear(); // 先清除檔案內容
+//        menuTodayJasonData.edit().clear().apply(); // 先清除檔案內容
 
         // 建立向PHP網頁發出請求的參數網址
         String parameterUrl = null;
@@ -136,6 +211,7 @@ public class MenuFragment extends Fragment {
         menuList = new ArrayList<>();
 
         String jasonDataString = menuTodayJasonData.getString("menuTodayJasonData", "0");
+        Log.d("MyLog", "jasonDataString:" + jasonDataString);
 
         JSONObject j;
         String menuitem;
@@ -152,7 +228,7 @@ public class MenuFragment extends Fragment {
             }
 
         } catch (JSONException e) {
-            Toast.makeText(getActivity(), "今日未提供店家訂購", Toast.LENGTH_SHORT).show();
+            Log.d("MyLog", "JSONExceptio:" + String.valueOf(e));
             e.printStackTrace();
         }
 
@@ -179,16 +255,15 @@ public class MenuFragment extends Fragment {
     private void orderAgainDialog() {
 
         dialog = new AlertDialog.Builder(getActivity())
-                .setTitle("是否需要重新點菜")
-                .setPositiveButton("確認", new DialogInterface.OnClickListener() {
+                .setTitle("取消訂單")
+                .setMessage("是否需要取消訂單")
+                .setPositiveButton("YES", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        todayOrderItemData.edit().putBoolean("SERVICE_IS_OPEN", false).apply();
-                        Intent intent = new Intent(getActivity(), LongRunningService.class);
-                        getActivity().stopService(intent);
+                        deleteMemberOrderDataFromServer();
                     }
                 })
-                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                .setNegativeButton("NO", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         goToCheckoutPage();
@@ -201,43 +276,56 @@ public class MenuFragment extends Fragment {
         dialog.getButton(dialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        Log.d("MyLog", "onActivityCreated()");
-
-
-        btnOrderCheck = getView().findViewById(R.id.btnOrderCheck);
-        tvOrderItem = getView().findViewById(R.id.tvOrderItem);
-        tvStorename = getView().findViewById(R.id.tvStorename);
-
-        memberData = getActivity().getSharedPreferences("member_data", MODE_PRIVATE);
-        String storeName = memberData.getString("TODAY_ORDER_STORENAME", "X");
-        Log.d("MyLog", "MenuFragment_storeName:" + storeName);
-
-        if (storeName.equals("X")) {
-            tvStorename.setText("未提供");
-        } else {
-            tvStorename.setText(storeName);
-        }
-        btnOrderCheck.setOnClickListener(btnOrderCheckOnClick);
-
-        todayOrderItemData = getActivity().getSharedPreferences("today_order_item_data", MODE_PRIVATE);
-        Boolean todayMenuIsChecked = todayOrderItemData.getBoolean("TODAY_MENU_IS_CHECKED", false);
-
-        if (todayMenuIsChecked) {
-            // 跳出視窗詢問是否需要重新訂餐
-            orderAgainDialog();
-        }
-
-//        if (arrangeIsChanged) {
-//            memberData.edit().putBoolean("ARRANGE_LIST_IS_CHANGED", false).apply();
-            getTodayMenuItemAndPrice(storeName);
-//        } else {
-            getMenuItemAndPrice();
-//        }
+    private void stopRemind() {
+        todayOrderItemData.edit().putBoolean("SERVICE_IS_OPEN", false).apply();
+        Intent intent = new Intent(getActivity(), LongRunningService.class);
+        getActivity().stopService(intent);
     }
 
+    private void deleteMemberOrderDataFromServer() {
+
+        loadingDialog(true);
+        String mUrl = "https://amu741129.000webhostapp.com/member_order_data_delete.php";
+
+        // 建立向PHP網頁發出請求的參數網址
+        String userId = memberData.getString("MEMBER_USERID", "0");
+        Log.d("MyLog", "userId:" + userId);
+        String parameterUrl;
+        parameterUrl = mUrl +
+                "?userid=" + userId;
+
+        mQueue = new Volley().newRequestQueue(getActivity());
+        getRequest = new StringRequest(parameterUrl,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String s) {
+                        Log.d("MyLog", "onResponse:" + s);
+                        loadingDialog(false);
+                        todayOrderItemData.edit().putBoolean("TODAY_MENU_IS_CHECKED", false).apply();
+                        cleanMemberOrderDataFromThisPhone();
+                        stopRemind();
+                        createMenu();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        Toast.makeText(getActivity(), "伺服器忙碌中，請稍後重試", Toast.LENGTH_SHORT).show();
+                        loadingDialog(false);
+                    }
+                });
+        mQueue.add(getRequest);
+    }
+
+    private void cleanMemberOrderDataFromThisPhone() {
+
+        // 清除今日點餐紀錄 From SharedPreferences
+        todayOrderItemData.edit().clear().apply();
+
+        // 清除今日點餐紀錄 From SQLite
+        helper = new HistorySQLiteHelper(getActivity());
+        helper.deleteByOrderDate(today);
+    }
 
     private class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
         private LayoutInflater inflater;
@@ -392,8 +480,7 @@ public class MenuFragment extends Fragment {
         }
 
         // 將結果已字串形式儲存
-        SharedPreferences todayOrderItemData = getActivity().getSharedPreferences("today_order_item_data", MODE_PRIVATE);
-        todayOrderItemData.edit().clear();
+//        todayOrderItemData.edit().clear().apply();
         todayOrderItemData.edit().putString("TODAY_ORDER_ITEM_JSON", jsonOrderItemTotalObject.toString()).apply();
 
 

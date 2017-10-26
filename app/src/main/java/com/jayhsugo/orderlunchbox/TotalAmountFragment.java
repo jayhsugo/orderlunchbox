@@ -153,6 +153,9 @@ public class TotalAmountFragment extends Fragment {
                             Log.d("MyLog", "getTotalMemberOrderList_onResponse:" + s);
                             if (s.equals("-1")) {
 //                                memberData.edit().putBoolean("TOTAL_MEMBER_ORDER_LIST_IS_EXIST", false).apply();
+                                // 先清除日期為當天的數據
+                                long deleteCount = helper.deleteAll();
+                                Log.d("MyLog", "deleteCount:" + String.valueOf(deleteCount));
                                 showTodayTotalAmountList();
                             } else {
 //                                memberData.edit().putBoolean("TOTAL_MEMBER_ORDER_LIST_IS_EXIST", true).apply();
@@ -203,6 +206,7 @@ public class TotalAmountFragment extends Fragment {
         // 將orderDataList存入SQLite資料庫
         // 先清除日期為當天的數據
         long deleteCount = helper.deleteAll();
+        Log.d("MyLog", "deleteCount:" + String.valueOf(deleteCount));
 
         totalAmountList = new ArrayList<>();
         if (orderDataList.size() > 0) {
